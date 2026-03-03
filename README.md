@@ -43,46 +43,54 @@ Tlias是一个现代化的员工管理系统，提供完整的员工、部门、
 
 #### 前置要求
 
-- Docker & Docker Compose
-- 8GB+ 可用内存（推荐）
+- **Docker 17.12.0+** 和 **Docker Compose 1.29.0+**
+- **系统资源**：8GB+ 可用内存、5GB+ 磁盘空间
+- **网络**：端口 80、3307、8080 未被占用
+
+#### 前置检查
+
+```bash
+# 验证环境（可选）
+docker --version && docker-compose --version
+netstat -ano | findstr "3307\|8080\|80"  # Windows 检查端口
+```
 
 #### 启动步骤
 
 ```bash
-# 1. 克隆或下载项目
-cd 新建文件夹
+# 1. 进入项目目录
+cd Tlias-managemnet-system
 
-# 2. 使用 Docker Compose 启动
+# 2. 启动所有服务
 docker-compose up -d
 
-# 3. 等待服务启动完成（约 30-60 秒）
+# 3. 验证服务状态
+docker-compose ps
+
+# 4. 查看初始化日志（等待 MySQL 启动完成，通常 20-30 秒）
 docker-compose logs -f
 
-# 4. 访问应用
-# 前端：http://localhost
-# 后端 API：http://localhost:8080
-# MySQL：localhost:3307（用户：root，密码：123456）
+# 5. 访问应用
+# - 前端：http://localhost
+# - 后端 API：http://localhost:8080
+# - MySQL：localhost:3307（root / 123456）
 ```
 
-#### 停止服务
+#### 常用命令
 
 ```bash
+# 停止服务
+docker-compose stop
+
+# 停止并删除容器
 docker-compose down
 
-# 清理所有数据（包括数据库）
+# 完全清理（删除所有数据）
 docker-compose down -v
-```
-
-#### 查看日志
-
-```bash
-# 查看所有服务日志
-docker-compose logs -f
 
 # 查看特定服务日志
-docker-compose logs -f backend
-docker-compose logs -f frontend
-docker-compose logs -f mysql
+docker-compose logs -f backend   # 查看后端日志
+docker-compose logs -f mysql     # 查看数据库日志
 ```
 
 ---
@@ -91,33 +99,38 @@ docker-compose logs -f mysql
 
 #### 前置要求
 
-- Java 17+
-- Node.js 16+
-- MySQL 8
-- Maven 3.6+
+- **Java 17+**：`java -version`
+- **Node.js 16+**：`node -v` 和 `npm -v`
+- **MySQL 8+**：`mysql --version`
+- **Maven 3.6+**：`mvn -v`
+
+#### 数据库初始化
+
+```bash
+# 1. 启动 MySQL 服务
+# Windows: net start MySQL80
+# macOS: brew services start mysql
+# Linux: sudo systemctl start mysql
+
+# 2. 初始化数据库
+mysql -u root -p < tlias-web-management/mysql_backup.sql
+```
 
 #### 后端启动
 
 ```bash
 cd tlias-web-management
 
-# 1. 配置数据库连接（src/main/resources/application.yml）
-# 修改以下配置：
+# 1. 修改数据库配置：src/main/resources/application.yml
 #   spring.datasource.url: jdbc:mysql://localhost:3306/tlias
 #   spring.datasource.username: root
-#   spring.datasource.password: 你的密码
+#   spring.datasource.password: 123456
 
-# 2. 初始化数据库
-# 使用 MySQL 客户端执行 mysql_backup.sql：
-mysql -u root -p < mysql_backup.sql
-
-# 3. 编译并打包
+# 2. 编译并运行
 mvn clean package -DskipTests
-
-# 4. 运行应用
 java -jar target/tlias-web-management-0.0.1-SNAPSHOT.jar
 
-# 应用启动后访问：http://localhost:8080
+# 后端服务：http://localhost:8080
 ```
 
 #### 前端启动
@@ -128,13 +141,13 @@ cd vue-tlias-management
 # 1. 安装依赖
 npm install
 
-# 2. 启动开发服务器（热更新）
+# 2. 启动开发服务器
 npm run dev
+
+# 前端服务：http://localhost:5173
 
 # 3. 构建生产版本
 npm run build
-
-# 前端访问：http://localhost:5173（开发模式）
 ```
 
 ---
